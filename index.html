@@ -3,84 +3,66 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>P-WORLD OCR 抽出ツール（新設計）</title>
+  <title>P-WORLD OCR 抽出ツール（極シンプル版）</title>
   <style>
     :root { color-scheme: light dark; }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 16px; }
-    h1 { font-size: 1.25rem; margin: 0 0 8px; }
-    .row { display: grid; gap: 12px; grid-template-columns: 1fr; margin-bottom: 12px; }
-    @media (min-width: 900px){ .row { grid-template-columns: 1fr 1fr; } }
-    .card { border: 1px solid #ccc; border-radius: 10px; padding: 12px; }
-    .muted { color: #666; font-size: .9rem; }
-    .btn { padding: 8px 12px; border-radius: 8px; border: 1px solid #999; background: #f5f5f5; cursor: pointer; }
-    .btn:disabled { opacity: .5; cursor: not-allowed; }
-    .log { white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #1111; padding: 8px; border-radius: 8px; max-height: 200px; overflow: auto; }
-    .ok { color: #0a7; }
-    .warn { color: #c80; }
-    .err { color: #c33; }
-    .list { max-height: 220px; overflow: auto; border: 1px solid #ddd; border-radius: 8px; padding: 8px; background: #fafafa; }
-    label { display: block; margin-bottom: 6px; font-weight: 600; }
-    input[type=file] { width: 100%; }
-    .small { font-size: .85rem; }
+    body { font-family: system-ui,-apple-system,Segoe UI,Roboto,sans-serif; margin:16px; }
+    h1 { font-size:1.1rem; margin:0 0 10px; }
+    .row { display:grid; gap:12px; grid-template-columns:1fr; margin-bottom:12px; }
+    @media (min-width:900px){ .row { grid-template-columns:1fr 1fr; } }
+    .card { border:1px solid #ccc; border-radius:10px; padding:12px; }
+    .btn { padding:8px 12px; border-radius:8px; border:1px solid #999; background:#f5f5f5; cursor:pointer; }
+    .btn:disabled { opacity:.5; cursor:not-allowed; }
+    .log { white-space:pre-wrap; font-family:ui-monospace,Menlo,Consolas,monospace; background:#1111; padding:8px; border-radius:8px; max-height:200px; overflow:auto; }
+    .list { max-height:260px; overflow:auto; border:1px solid #ddd; border-radius:8px; padding:8px; background:#fafafa; font-size:.95rem; }
+    .ok { color:#0a7 } .warn{color:#c80} .err{color:#c33}
+    label{display:block; margin-bottom:6px; font-weight:600;}
+    input[type=file]{ width:100%; }
   </style>
 
-  <!-- pdf.js（グローバル: pdfjsLib） -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js"></script>
-<script>
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js";
-</script>
-  <!-- Tesseract.js（ブラウザ用 / グローバル: Tesseract）
-       言語データはCDNから自動取得（'jpn+eng' 推奨） -->
+  <!-- pdf.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js";
+  </script>
+  <!-- Tesseract / PapaParse / SheetJS -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-
-  <!-- PapaParse（CSV → JSON） -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
-
-  <!-- SheetJS（Excel 生成用） -->
-  <script type="text/javascript" src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
-  <h1>PDF → 機種名抽出 → Excel（新設計クリーン版）</h1>
+  <h1>PDF → 機種名 抽出（極シンプル版／重複は自動で削除）</h1>
 
   <div class="row">
     <div class="card">
-      <label for="pdfFile">① PDFファイル（HPをPDF化したもの）</label>
+      <label for="pdfFile">① PDFファイル</label>
       <input id="pdfFile" type="file" accept="application/pdf" />
-      <p class="muted small">※ まずはPDFのテキスト層から抽出。テキストがほぼ無い場合は自動でOCR（Tesseract）に切替。</p>
+      <p style="margin:.5rem 0 0; font-size:.9rem; color:#666">※ テキスト層優先。無ければ自動でOCR。</p>
     </div>
 
     <div class="card">
-      <label for="csvFile">② マスターシート CSV（機種名 正式名称の一覧）</label>
+      <label for="csvFile">② マスターCSV（1列目に正式名称／2列目以降は別名OK）</label>
       <input id="csvFile" type="file" accept=".csv,text/csv" />
-      <p class="muted small">※ 見出しは任意。最初の列を機種名として読み込みます（重複は自動排除）。</p>
     </div>
   </div>
 
-  <div class="card">
-    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-      <button id="btnExtract" class="btn" disabled>抽出を実行</button>
-      <button id="btnDownload" class="btn" disabled>Excel（.xlsx）で保存</button>
-      <label class="small" style="display:flex; align-items:center; gap:6px;">
-        <input id="chkAgg" type="checkbox" /> 同一機種は集計して1行にまとめる
-      </label>
-    </div>
-    <p class="muted small">出力列：<code>日付（yyyy-mm-dd） / 機種名 / 台数</code>（集計ON時）。集計OFF時は1台1行で出力。</p>
+  <div class="card" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+    <button id="btnExtract" class="btn" disabled>抽出を実行</button>
+    <button id="btnDownload" class="btn" disabled>Excel（機種名のみ）で保存</button>
   </div>
 
   <div class="row">
     <div class="card">
-      <label>ログ</label>
+      <div style="font-weight:600; margin-bottom:6px;">ログ</div>
       <div id="log" class="log"></div>
     </div>
     <div class="card">
-      <label>抽出結果（プレビュー 200件まで）</label>
-      <div id="preview" class="list small"></div>
+      <div style="font-weight:600; margin-bottom:6px;">抽出結果（プレビュー）</div>
+      <div id="preview" class="list"></div>
     </div>
   </div>
 
   <script src="./app.js"></script>
 </body>
 </html>
-
-
