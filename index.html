@@ -2,77 +2,77 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>P-WORLD OCR 抽出ツール（極シンプル版）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>機種抽出ツール｜新リポジトリ設計</title>
   <style>
-    :root { color-scheme: light dark; }
-    body { font-family: system-ui,-apple-system,Segoe UI,Roboto,sans-serif; margin:16px; }
-    h1 { font-size:1.1rem; margin:0 0 10px; }
-    .row { display:grid; gap:12px; grid-template-columns:1fr; margin-bottom:12px; }
-    @media (min-width:900px){ .row { grid-template-columns:1fr 1fr; } }
-    .card { border:1px solid #ccc; border-radius:10px; padding:12px; }
-    .btn { padding:8px 12px; border-radius:8px; border:1px solid #999; background:#f5f5f5; cursor:pointer; }
-    .btn:disabled { opacity:.5; cursor:not-allowed; }
-    .log { white-space:pre-wrap; font-family:ui-monospace,Menlo,Consolas,monospace; background:#1111; padding:8px; border-radius:8px; max-height:200px; overflow:auto; }
-    .list { max-height:260px; overflow:auto; border:1px solid #ddd; border-radius:8px; padding:8px; background:#fafafa; font-size:.95rem; }
-    .ok { color:#0a7 } .warn{color:#c80} .err{color:#c33}
-    label{display:block; margin-bottom:6px; font-weight:600;}
-    input[type=file]{ width:100%; }
+    :root { --bg:#0f1220; --card:#161a2b; --text:#e8ecff; --muted:#9aa3c7; --accent:#7aa2ff; }
+    html,body{height:100%}
+    body{margin:0;background:linear-gradient(180deg,#0e1120,#0b0e18);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,"ヒラギノ角ゴ ProN W3","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;}
+    .wrap{max-width:960px;margin:0 auto;padding:24px}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.06);box-shadow:0 10px 30px rgba(0,0,0,.35);border-radius:16px;padding:20px}
+    h1{font-size:20px;margin:0 0 12px}
+    p.desc{color:var(--muted);margin:0 0 16px}
+    .grid{display:grid;grid-template-columns:1fr;gap:12px}
+    @media (min-width:640px){.grid{grid-template-columns:1fr 1fr}}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    input[type=file]{display:block;width:100%;padding:10px;background:#0e1230;border:1px solid rgba(255,255,255,.08);border-radius:10px;color:var(--text)}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    button{appearance:none;border:0;border-radius:12px;padding:10px 14px;background:var(--accent);color:#081028;font-weight:700;cursor:pointer}
+    button.secondary{background:#2a3152;color:var(--text)}
+    progress{width:100%;height:12px;border-radius:999px;overflow:hidden;-webkit-appearance:none;appearance:none}
+    progress::-webkit-progress-bar{background:#11152a}
+    progress::-webkit-progress-value{background:var(--accent)}
+    #log{margin-top:12px;background:#0d1126;border:1px solid rgba(255,255,255,.06);border-radius:12px;min-height:120px;max-height:220px;overflow:auto;padding:10px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}
+    .note{font-size:12px;color:var(--muted)}
+    .footer{opacity:.7;text-align:center;font-size:11px;margin-top:18px}
   </style>
-
- 
-<!-- 同じく v3 を jsDelivr から -->
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
-<script>
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
-  console.log('pdfjsLib?', typeof window.pdfjsLib, 'v:', window.pdfjsLib?.version);
-</script>
-
-
-
-<!-- Tesseract / PapaParse / SheetJS はこの下でOK -->
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
-<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-
 </head>
 <body>
-  <h1>PDF → 機種名 抽出（極シンプル版／重複は自動で削除）</h1>
-
-  <div class="row">
+  <div class="wrap">
     <div class="card">
-      <label for="pdfFile">① PDFファイル</label>
-      <input id="pdfFile" type="file" accept="application/pdf" />
-      <p style="margin:.5rem 0 0; font-size:.9rem; color:#666">※ テキスト層優先。無ければ自動でOCR。</p>
-    </div>
+      <h1>PDF→機種抽出 CSV ツール</h1>
+      <p class="desc">PDFからテキストを抽出し、マスターCSVと照合して正式名称をCSV出力します。OCRは必要時のみ自動利用可能。</p>
 
-    <div class="card">
-      <label for="csvFile">② マスターCSV（1列目に正式名称／2列目以降は別名OK）</label>
-      <input id="csvFile" type="file" accept=".csv,text/csv" />
+      <div class="grid">
+        <div>
+          <label for="masterInput">マスターCSV（1列目に正式名称。ヘッダー可）</label>
+          <input id="masterInput" type="file" accept=".csv" />
+        </div>
+        <div>
+          <label for="pdfInput">対象PDF（P-WORLD等の機種リスト）</label>
+          <input id="pdfInput" type="file" accept="application/pdf" />
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="startBtn">抽出を開始</button>
+        <button id="downloadCsvBtn" class="secondary" type="button">ログCSV保存（任意）</button>
+      </div>
+
+      <div style="margin-top:12px">
+        <label class="note" for="progress">進捗</label>
+        <progress id="progress" value="0" max="100"></progress>
+      </div>
+
+      <div id="log" aria-live="polite"></div>
+      <div class="footer">v2025-09-22 新リポ設計｜pdf.js + （必要時）tesseract.js</div>
     </div>
   </div>
 
-  <div class="card" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-    <button id="btnExtract" class="btn" disabled>抽出を実行</button>
-    <button id="btnDownload" class="btn" disabled>Excel（機種名のみ）で保存</button>
-  </div>
+  <!-- ===== 依存ライブラリ（順序厳守） ===== -->
+  <!-- pdf.js 本体 -->
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <!-- pdf.js ワーカー指定（同バージョンを指すこと！） -->
+  <script>
+    // グローバルにある pdfjsLib を参照して worker を設定
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+    }
+  </script>
+  <!-- OCRを使う場合のみ（読み込みが重いと感じたら一旦外してOK） -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
-  <div class="row">
-    <div class="card">
-      <div style="font-weight:600; margin-bottom:6px;">ログ</div>
-      <div id="log" class="log"></div>
-    </div>
-    <div class="card">
-      <div style="font-weight:600; margin-bottom:6px;">抽出結果（プレビュー）</div>
-      <div id="preview" class="list"></div>
-    </div>
-  </div>
-
+  <!-- アプリ本体 -->
   <script src="./app.js"></script>
 </body>
 </html>
-
-
-
-
