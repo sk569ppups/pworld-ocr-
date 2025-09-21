@@ -21,17 +21,21 @@
   </style>
 
  
-  <!-- pdf.js（グローバル: pdfjsLib） -->
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.js"></script>
+ <!-- pdf.js（グローバル: pdfjsLib） -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js"></script>
 <script>
+  // 同バージョンの worker を明示
   pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.js";
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js";
+  // 読み込み確認（開発中のみ）
+  console.log('pdfjsLib?', typeof window.pdfjsLib, 'version:', window.pdfjsLib?.version);
 </script>
 
-  <!-- Tesseract / PapaParse / SheetJS -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<!-- Tesseract / PapaParse / SheetJS はこの下でOK -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
 </head>
 <body>
   <h1>PDF → 機種名 抽出（極シンプル版／重複は自動で削除）</h1>
@@ -68,4 +72,5 @@
   <script src="./app.js"></script>
 </body>
 </html>
+
 
