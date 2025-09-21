@@ -193,16 +193,42 @@ btnExtract.addEventListener("click", async ()=>{
   const hits = matchLinesToMaster(lines);
   log(`照合ヒット: ${hits.length}件`, hits.length? "ok":"warn");
 
-  // 重複除去＆ソートしてプレビュー
-  const uniqueSorted = Array.from(new Set(hits)).sort((a,b)=>a.localeCompare(b,'ja'));
-  extracted = uniqueSorted;
+  const lines = splitToLines(textRes.text);
+log(`行分割: ${lines.length}行`);
+function matchLinesToMaster_STRICT(lines){
+  const looseToOfficial = new Map();
+  for (const off of masterOfficial){
+    const lk = makeLooseKey(off);
+    if(!lk) continue;
+    if(!looseToOfficial.has(lk)) looseToOfficial.set(lk, new Set());
+    looseToOfficial.get(lk).add(off);
+  }
 
-  preview.innerHTML = uniqueSorted.map((nm,i)=>`${i+1}. ${nm}`).join("<br>");
-  btnDownload.disabled = uniqueSorted.length===0;
-});
+  const hits = [];
+  for (const raw of lines){
+    const lk = makeLooseKey(raw);
+    if(!lk) continue;
+    if (masterLooseSet.has(lk)){
+      const offs = looseToOfficial.get(lk) || new Set();
+      for (const o of offs) hits.push(o);
+    }
+  }
+  return Array.from(new Set(hits)).sort((a,b)=>a.localeCompare(b,'ja'));
+}
+
+// ★新しい関数で完全一致のみチェック
+const hits = matchLinesToMaster_STRICT(lines);
+log(`ヒット機種（完全一致）: ${hits.length}件`, hits.length ? "ok" : "warn");
+
+extracted = hits;
+
+// プレビュー出力
+preview.innerHTML = hits.map((nm,i)=>`${i+1}. ${nm}`).join("<br>");
+btnDownload.disabled = hits.length===0;
 
 btnDownload.addEventListener("click", ()=>{
   if(extracted.length===0) return;
   downloadXlsx(extracted, "extracted.xlsx");
   log("Excelを書き出しました。", "ok");
 });
+
