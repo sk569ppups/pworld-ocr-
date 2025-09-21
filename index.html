@@ -21,15 +21,14 @@
   </style>
 
  
- <!-- pdf.js（グローバル: pdfjsLib） -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js"></script>
+<!-- pdf.js v3（グローバル: pdfjsLib が出る） -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
-  // 同バージョンの worker を明示
   pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js";
-  // 読み込み確認（開発中のみ）
-  console.log('pdfjsLib?', typeof window.pdfjsLib, 'version:', window.pdfjsLib?.version);
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  console.log('pdfjsLib?', typeof window.pdfjsLib, 'v:', window.pdfjsLib?.version);
 </script>
+
 
 <!-- Tesseract / PapaParse / SheetJS はこの下でOK -->
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -72,5 +71,6 @@
   <script src="./app.js"></script>
 </body>
 </html>
+
 
 
