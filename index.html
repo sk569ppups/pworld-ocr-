@@ -24,12 +24,13 @@
     .small { font-size: .85rem; }
   </style>
 
-  <!-- pdf.js（Generic build / グローバル: pdfjsLib） -->
-  <script src="https://unpkg.com/pdfjs-dist/build/pdf.min.js"></script>
-  <script>
-    // worker の場所を明示（CDNに合わせる）
-    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://unpkg.com/pdfjs-dist/build/pdf.worker.min.js";
-  </script>
+  <!-- pdf.js（グローバル: pdfjsLib） -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js";
+</script>
+
 
   <!-- Tesseract.js（ブラウザ用 / グローバル: Tesseract）
        言語データはCDNから自動取得（'jpn+eng' 推奨） -->
@@ -83,3 +84,4 @@
   <script src="./app.js"></script>
 </body>
 </html>
+
