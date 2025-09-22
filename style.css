@@ -1,0 +1,21 @@
+:root{ --bg:#0d1117; --panel:#161b22; --text:#c9d1d9; --muted:#8b949e; --accent:#2f81f7; --ok:#2ea043; --warn:#d29922; --err:#f85149; --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+
+*{ box-sizing: border-box; }
+body{ margin:0; background:var(--bg); color:var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Noto Sans JP, sans-serif; }
+.container{ max-width: 980px; margin: 24px auto; padding: 0 16px; }
+h1{ margin: 0 0 16px; font-size: 22px; }
+h2{ margin: 0 0 8px; font-size: 16px; }
+.panel{ background:var(--panel); border:1px solid #30363d; border-radius:12px; padding:16px; margin:12px 0; }
+.hint{ color:var(--muted); font-size: 12px; }
+.actions{ display:flex; align-items:center; gap:12px; }
+button{ appearance:none; background:var(--accent); color:white; border:none; padding:10px 14px; border-radius:10px; font-weight:600; cursor:pointer; }
+button[disabled]{ opacity:.5; cursor:not-allowed; }
+#progress{ color:var(--muted); }
+.log{ max-height: 260px; overflow:auto; padding:12px; background:#0b0f14; border:1px solid #222; border-radius:8px; font-family:var(--mono); font-size:12px; line-height:1.5; }
+.log .ok{ color:var(--ok); }
+.log .warn{ color:var(--warn); }
+.log .err{ color:var(--err); }
+.outputs{ display:flex; gap:12px; }
+.summary{ margin-top:10px; font-family:var(--mono); font-size: 13px; color:var(--muted); }
+pre{ margin:6px 0 0; font-family:var(--mono); font-size:12px; background:#0b0f14; color:#bcd; border:1px solid #222; padding:8px; border-radius:8px; }
+code{ background:#0b0f14; padding:2px 6px; border-radius:6px; border:1px solid #222; }
