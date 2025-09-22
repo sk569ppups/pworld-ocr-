@@ -65,23 +65,35 @@
   async function extractTextFromPDF(file, ocrFallback=true){ if(!('pdfjsLib' in window)) throw new Error('pdf.js が読み込まれていません。'); const pdfjs=window.pdfjsLib; const arrayBuffer=await file.arrayBuffer(); const pdf=await pdfjs.getDocument({data:arrayBuffer}).promise; const allLines=[]; for(let p=1;p<=pdf.numPages;p++){ setProgress(`PDFテキスト抽出中 (page ${p}/${pdf.numPages})`,p,pdf.numPages); const page=await pdf.getPage(p); const content=await page.getTextContent(); const text=content.items.map(it=> (it.str||'')).join('\n'); const pageText=NameNormalizer.normalizeDisplay(text); const lines=pageText.split(/\r?\n/).map(s=>s.trim()).filter(Boolean); if(ocrFallback && lines.join(' ').length<20 && 'Tesseract' in window){ log(`page ${p}: テキスト弱→OCR`); const ocrLines=await ocrPageToLines(page); allLines.push(...ocrLines); } else { allLines.push(...lines); } } return allLines; }
   async function ocrPageToLines(page){ const viewport=page.getViewport({scale:2.0}); const canvas=document.createElement('canvas'); const ctx=canvas.getContext('2d'); canvas.width=viewport.width; canvas.height=viewport.height; const renderTask=page.render({canvasContext:ctx,viewport}); await renderTask.promise; const {data:{text}}=await window.Tesseract.recognize(canvas,'jpn+eng',{logger:(m)=>{ if(m.status&&m.progress!=null){ setProgress(`OCR ${m.status}`, Math.round(m.progress*100),100); } }}); const normalized=NameNormalizer.normalizeDisplay(text); return normalized.split(/\r?\n/).map(s=>s.trim()).filter(Boolean); }
 
-  // ===== ノイズ判定（NGワード） =====
-  const NG = (()=>{
-    const ngLoose = new Set(CONFIG.NG_WORDS.map(w=>NameNormalizer.makeLooseKey(w)).filter(Boolean));
-    function isNoiseLine(s){
-      if(!s) return true;
-      const disp = NameNormalizer.normalizeDisplay(s);
-      if(!disp) return true;
-      const loose = NameNormalizer.makeLooseKey(disp);
-      if(!loose) return true;
-      // 数字や記号だけ
-      if(/^[0-9\-_. ]+$/.test(loose)) return true;
-      // NGワードを含む
-      for(const ng of ngLoose){ if(loose.includes(ng)) return true; }
-      return false;
+// ===== ノイズ判定（NGワード） =====
+const NG = (()=>{
+  // ★ 長さ3以上だけをNGに採用（単文字・2文字は誤爆が多い）
+  const ngLoose = new Set(
+    CONFIG.NG_WORDS
+      .filter(w => (w || '').length >= 3)   // ここを追加
+      .map(w => NameNormalizer.makeLooseKey(w))
+      .filter(Boolean)
+  );
+
+  function isNoiseLine(s){
+    if(!s) return true;
+    const disp = NameNormalizer.normalizeDisplay(s);
+    if(!disp) return true;
+    const loose = NameNormalizer.makeLooseKey(disp);
+    if(!loose) return true;
+
+    // 数字や記号だけ
+    if(/^[0-9\-_. ]+$/.test(loose)) return true;
+
+    // NGワードを含む（※3文字以上のみ）
+    for(const ng of ngLoose){
+      if(loose.includes(ng)) return true;
     }
-    return { isNoiseLine };
-  })();
+    return false;
+  }
+  return { isNoiseLine };
+})();
+
 
   // ===== 照合・抽出 =====
   const Extractor={
@@ -177,3 +189,4 @@
 
   window.addEventListener('DOMContentLoaded',()=>{ bindEvents(); checkDeps(); log('app.js 初期化完了（NGフィルタ＋縦1列CSVメイン）'); });
 })();
+
