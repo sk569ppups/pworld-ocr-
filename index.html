@@ -6,8 +6,8 @@
   <title>P-WORLD OCR 抽出ツール（安定版）</title>
   <link rel="stylesheet" href="./style.css" />
   <!-- pdf.js (text抽出が無理なら画像OCRへフォールバック) -->
-  <script defer src="https://unpkg.com/pdfjs-dist@4.7.76/build/pdf.min.js"></script>
-  <script defer src="https://unpkg.com/pdfjs-dist@4.7.76/build/pdf.worker.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/legacy/build/pdf.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/legacy/build/pdf.worker.min.js"></script>
   <!-- Tesseract.js (日本語データ付きCDN) -->
   <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.0/dist/tesseract.min.js"></script>
   <!-- 文字正規化＆照合ヘルパー -->
@@ -63,3 +63,4 @@
   <canvas id="workCanvas" style="display:none;"></canvas>
 </body>
 </html>
+
