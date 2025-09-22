@@ -20,7 +20,19 @@
     box.appendChild(d); box.scrollTop = box.scrollHeight;
   }
   function setProgress(label, value, max = 100){ const p = $('#progress'); if(!p) return; if('value' in p){ p.max=max; p.value=value; p.setAttribute('data-label',label);} else { p.textContent=`${label} ${Math.round((value/max)*100)}%`; } }
-  function saveAs(filename, text){ const blob = new Blob([text],{type:'text/csv;charset=utf-8'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
+  // 置き換え前：Blob([text], { type: 'text/csv;charset=utf-8' })
+function saveAs(filename, text, addBOM = true) {
+  const BOM = addBOM ? '\uFEFF' : '';
+  const blob = new Blob([BOM, text], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
 
   // ===== 正規化 =====
   const NameNormalizer = {
@@ -70,3 +82,4 @@
 
   window.addEventListener('DOMContentLoaded',()=>{ bindEvents(); checkDeps(); log('app.js 初期化完了（緩和マッチ版）'); });
 })();
+
