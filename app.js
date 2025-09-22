@@ -35,6 +35,39 @@ function saveAs(filename, text){
   a.click();
   URL.revokeObjectURL(a.href);
 }
+// ===== pdf.js ローダ（グローバル未定義なら動的に読み込む） =====
+async function ensurePdfJS() {
+  if (window.pdfjsLib) return;
+
+  // 1) まず legacy UMD を動的ロード（グローバル pdfjsLib を期待）
+  try {
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/legacy/build/pdf.min.js';
+      s.defer = true;
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+    // worker も読み込み（失敗しても後段でセットするので続行）
+    const s2 = document.createElement('script');
+    s2.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/legacy/build/pdf.worker.min.js';
+    s2.defer = true;
+    document.head.appendChild(s2);
+
+    if (window.pdfjsLib) return; // ここで取れればOK
+  } catch (_) {
+    // 何もしない（次のESMへ）
+  }
+
+  // 2) それでもダメなら ESM を import して window に載せる
+  const mod = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/build/pdf.mjs');
+  window.pdfjsLib = mod;
+
+  // ESM 用 worker の場所を明示（mjs）
+  window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/build/pdf.worker.min.mjs';
+}
 
 // ===== Inputs =====
 els.masterFile.addEventListener('change', async (e)=>{
@@ -246,3 +279,4 @@ function filterCandidateLines(lines){
 }
 
 })();
+
