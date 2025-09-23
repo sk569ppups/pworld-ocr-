@@ -28,16 +28,14 @@ function setProgress(msg){
   els.progress.textContent = msg;
 }
 function saveAs(filename, text){
-  // Shift_JIS に変換して保存
-  const sjisEncoder = new TextEncoder('shift-jis'); 
-  const sjisData = sjisEncoder.encode(text);
-  const blob = new Blob([sjisData], {type:'text/csv;charset=shift-jis'});
-  
+  const blob = new Blob([text], {type:'text/csv;charset=utf-8'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = filename;
   a.click();
   URL.revokeObjectURL(a.href);
+}
+
 }
 
 }
@@ -285,5 +283,6 @@ function filterCandidateLines(lines){
 }
 
 })();
+
 
 
