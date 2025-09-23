@@ -40,7 +40,7 @@ function saveAs(filename, text){
 
 }
 // ===== pdf.js ローダ（グローバル未定義なら動的に読み込む） =====
-async function ensurePdfJS() {
+
   if (window.pdfjsLib) return;
 
   // 1) まず legacy UMD を動的ロード（グローバル pdfjsLib を期待）
@@ -283,6 +283,7 @@ function filterCandidateLines(lines){
 }
 
 })();
+
 
 
 
