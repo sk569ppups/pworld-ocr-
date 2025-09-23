@@ -38,7 +38,6 @@ function saveAs(filename, text){
 
 }
 
-}
 // ===== pdf.js ローダ（グローバル未定義なら動的に読み込む） =====
 
   if (window.pdfjsLib) return;
@@ -283,6 +282,7 @@ function filterCandidateLines(lines){
 }
 
 })();
+
 
 
 
