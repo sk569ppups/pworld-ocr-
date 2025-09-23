@@ -28,12 +28,18 @@ function setProgress(msg){
   els.progress.textContent = msg;
 }
 function saveAs(filename, text){
-  const blob = new Blob([text], {type:'text/csv;charset=utf-8'});
+  // Shift_JIS に変換して保存
+  const sjisEncoder = new TextEncoder('shift-jis'); 
+  const sjisData = sjisEncoder.encode(text);
+  const blob = new Blob([sjisData], {type:'text/csv;charset=shift-jis'});
+  
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = filename;
   a.click();
   URL.revokeObjectURL(a.href);
+}
+
 }
 // ===== pdf.js ローダ（グローバル未定義なら動的に読み込む） =====
 async function ensurePdfJS() {
@@ -279,4 +285,5 @@ function filterCandidateLines(lines){
 }
 
 })();
+
 
