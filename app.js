@@ -34,9 +34,7 @@ function saveAs(filename, text){
   a.download = filename;
   a.click();
   URL.revokeObjectURL(a.href);
-}
 
-}
 
 // ===== pdf.js ローダ（グローバル未定義なら動的に読み込む） =====
 
@@ -282,6 +280,7 @@ function filterCandidateLines(lines){
 }
 
 })();
+
 
 
 
